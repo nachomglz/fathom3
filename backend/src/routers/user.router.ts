@@ -1,37 +1,16 @@
-import {FastifyInstance} from "fastify";
-import { PrismaClient, User } from '@prisma/client'
+import { FastifyInstance } from "fastify";
+import { PrismaClient } from '@prisma/client'
+import { getUser, getUsers, createUser, updateUser, deleteUser } from '../controllers'
 
 const prisma = new PrismaClient()
 
 const userRouter = (fastify: FastifyInstance, options: any, done: () => void) => {
-    fastify.post('/', async (req, rep) => {
-        let { email, name, password, surname } = req.body as Omit<User, "id">
+    fastify.post('/', createUser);
+    fastify.get('/', getUsers);
+    fastify.get('/:id', getUser);
+    fastify.put('/:id', updateUser);
+    fastify.delete('/:id', deleteUser)
 
-        try {
-            let newUser = await prisma.user.create({
-                data: {
-                    email: email,
-                    name: name,
-                    password: password,
-                    surname
-                }
-            })
-
-            if (newUser) {
-                return rep.send({
-                    status: "success",
-                    user: newUser
-                })
-            }
-
-        } catch(e: any) {
-            rep.send({
-                status: 'failed',
-                error: e.toString()
-            })
-        }
-
-    })
     done()
 }
 
