@@ -53,7 +53,9 @@ async function main() {
 main()
     .then(_ => {
         console.log('[INFO] ~ Database sown')
+        prisma.$disconnect()
     }).catch(e => {
         console.error('[ERROR] ~ Seeding the database...')
+        prisma.$disconnect()
         process.exit(1)
     })
