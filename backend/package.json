@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "nodemon src/index.ts",
     "start": "tsc && node dist/index.js",
-    "build": "tsc"
+    "build": "tsc",
+    "seed": "ts-node prisma/seed.ts"
   },
   "devDependencies": {
     "@types/node": "^20.3.1",

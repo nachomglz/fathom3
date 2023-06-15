@@ -2,11 +2,9 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
   binaryTargets = ["native", "linux-musl-arm64-openssl-3.0.x"]
 }
-
-
 
 datasource db {
   provider = "postgresql"
@@ -14,9 +12,38 @@ datasource db {
 }
 
 model User {
-  id Int @id @default(autoincrement())
-  email String @unique
-  name String
-  surname String
-  password String
+  id           Int           @id @default(autoincrement())
+  email        String        @unique
+  name         String
+  surname      String
+  password     String
+  createdAt    DateTime      @default(now())
+  expenseLists ExpenseList[]
+  expenses     Expense[]
+  totalBalance Float         @default(0)
+}
+
+model ExpenseList {
+  id           Int       @id @default(autoincrement())
+  participants User[]
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime
+  expenses     Expense[]
+}
+
+enum ExpenseType {
+  SPLIT_EQUALLY
+  PAYER_OWES
+  DEBTOR_OWES
+}
+
+model Expense {
+  id            Int         @id @default(autoincrement())
+  name          String
+  type          ExpenseType @default(SPLIT_EQUALLY)
+  amount        Float       @default(0)
+  payerId       Int
+  payer         User        @relation(fields: [payerId], references: [id])
+  expenseListId Int
+  expenseList   ExpenseList @relation(fields: [expenseListId], references: [id])
 }
