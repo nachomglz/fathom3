@@ -87,9 +87,10 @@ export const getUsers = async (req: FastifyRequest, rep: FastifyReply): Promise<
     }
 }
 
-export const updateUser = async (req: FastifyRequest<{ Body: Partial<User>}>, rep: FastifyReply): Promise<FastifyInstance> => {
+export const updateUser = async (req: FastifyRequest<{ Body: Partial<User>, Params: { id: string } }>, rep: FastifyReply): Promise<FastifyInstance> => {
     try {
         let user = req.body
+        let { id } = req.params
 
         let updatedUser = await prisma.user.update({
             data: {...user},
@@ -119,18 +120,6 @@ export const deleteUser = async (req: FastifyRequest<{ Params: { id: string }}>,
             where: {
                 id: parseInt(id)
             },
-            select: {
-                _count: false,
-                expenseLists: false,
-                expenses: false,
-                password: false,
-                totalBalance: false,
-                createdAt: true,
-                email: true,
-                id: true,
-                name: true,
-                surname: true
-            }
         })
 
         return rep.send({
