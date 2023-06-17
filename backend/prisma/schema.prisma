@@ -20,7 +20,6 @@ model User {
   createdAt    DateTime      @default(now())
   expenseLists ExpenseList[]
   expenses     Expense[]
-  totalBalance Float         @default(0)
 }
 
 model ExpenseList {
