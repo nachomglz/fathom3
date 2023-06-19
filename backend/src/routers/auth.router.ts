@@ -11,7 +11,6 @@ const authRouter = (fastify: FastifyInstance, options: any, done: () => void) =>
   fastify.post('/login', login)
   fastify.get('/refresh', refresh)
   fastify.post('/', { preHandler: verifyAuthentication }, authenticate)
-
   done()
 }
 

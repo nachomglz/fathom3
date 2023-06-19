@@ -1,6 +1,7 @@
 import server from "./server"
 import { PrismaClient } from "@prisma/client"
 import logger from "./utils/logger"
+import cors from '@fastify/cors'
 
 // Check if environment variables are set
 let DATABASE_URL = process.env.DATABASE_URL
@@ -16,6 +17,9 @@ if(!AUTH_SECRET) {
 }
 
 
+server.register(cors, {
+    origin: '*'
+})
 
 server.listen({ port: 3001, host: "0.0.0.0" }, (err, addr) => {
     if (err) {

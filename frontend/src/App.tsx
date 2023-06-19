@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react'
 import './App.css'
 import { Header, Navigation } from './components'
 import { ThemeContext } from 'styled-components'
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/ReactToastify.css'
 
 function App() {
 
@@ -20,6 +22,7 @@ function App() {
       <div className="container">
         <Navigation header={<Header />} />
       </div>
+      <ToastContainer theme='dark' />
     </ThemeContext.Provider>
   )
 }

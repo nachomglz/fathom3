@@ -13,6 +13,14 @@ interface JwtPayload extends DefaultPayload {
 const prisma = new PrismaClient()
 
 export const login = async (req: FastifyRequest<{ Body: LoginBody }>, rep: FastifyReply): Promise<FastifyInstance> => {
+  if (!req.body) {
+    return rep.status(422).send({
+      status: CustomResponseStatus.FAIL,
+      code: CustomResponseCodes.UNPROCESSABLE_ENTITY,
+      data: null
+    })
+  }
+
   let { email, password } = req.body
 
   try {
