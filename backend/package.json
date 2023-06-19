@@ -10,13 +10,19 @@
     "seed": "ts-node prisma/seed.ts"
   },
   "devDependencies": {
+    "@types/chalk": "^0.4.28",
+    "@types/jsonwebtoken": "^9.0.2",
     "@types/node": "^20.3.1",
     "@types/nodemon": "^1.19.2",
     "nodemon": "^2.0.22",
     "prisma": "^4.15.0"
   },
   "dependencies": {
+    "@fastify/cookie": "^8.3.0",
+    "@fastify/cors": "^8.3.0",
     "@prisma/client": "4.15.0",
-    "fastify": "^4.18.0"
+    "chalk": "4.1.2",
+    "fastify": "^4.18.0",
+    "jsonwebtoken": "^9.0.0"
   }
 }

@@ -1,6 +1,6 @@
 import React from 'react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
-import { Main } from '../../pages'
+import { Main, Login } from '../../pages'
 
 interface Props {
   header?: React.ReactNode
@@ -12,6 +12,7 @@ const Navigation: React.FC<Props> = ({ header }) => {
       {header && header}
       <Routes>
         <Route path="/" element={<Main />} />
+        <Route path="/login" element={<Login />} />
       </Routes>
     </BrowserRouter>
   )

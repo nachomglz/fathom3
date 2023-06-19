@@ -1,5 +1,7 @@
 import { FastifyRequest, FastifyReply, FastifyInstance } from 'fastify'
 import { PrismaClient, User } from '@prisma/client'
+import logger from '../utils/logger';
+import { CustomResponseCodes, CustomResponseStatus } from '../utils/types';
 
 const prisma = new PrismaClient()
 
@@ -12,26 +14,26 @@ export const createUser = async (req: FastifyRequest<{ Body: Omit<User, "id"> }>
         ...user
       },
       select: {
+        id: true,
+        name: true,
+        surname: true,
+        email: true,
         password: false
       }
     })
 
-    if (newUser) {
-      return rep.send({
-        status: 'success',
-        data: newUser
-      })
-    } else {
-      return rep.send({
-        status: 'failed',
-        data: "Error user.controller.ts ~ line: 21"
-      })
-    }
+    return rep.send({
+      status: CustomResponseStatus.SUCCESS,
+      code: CustomResponseCodes.AUTHORIZED,
+      data: newUser
+    })
   } catch (e: any) {
     prisma.$disconnect()
+    logger.error(e.message)
     return rep.status(500).send({
-      status: 'failed',
-      data: "error: user.controller.ts:15"
+      status: CustomResponseStatus.FAIL,
+      code: CustomResponseCodes.INTERNAL_SERVER_ERROR,
+      data: null
     })
   }
 
@@ -43,8 +45,9 @@ export const getUser = async (req: FastifyRequest<{ Params: { id: string } }>, r
   if (!id) {
     prisma.$disconnect()
     return rep.status(404).send({
-      status: "failed",
-      data: "User not found"
+      status: CustomResponseStatus.FAIL,
+      code: CustomResponseCodes.NOT_FOUND,
+      data: null
     })
   }
 
@@ -58,15 +61,17 @@ export const getUser = async (req: FastifyRequest<{ Params: { id: string } }>, r
     prisma.$disconnect()
 
     return rep.send({
-      status: "success",
+      status: CustomResponseStatus.SUCCESS,
+      code: CustomResponseCodes.AUTHORIZED,
       data: user
     })
   } catch (e: any) {
-    console.error('[ERROR] ~ Getting user from db...')
+    logger.error('Getting user from db...')
     prisma.$disconnect()
     return rep.status(500).send({
-      status: 'failed',
-      data: 'error: user.controller.ts:34'
+      status: CustomResponseStatus.FAIL,
+      code: CustomResponseCodes.INTERNAL_SERVER_ERROR,
+      data: null
     })
   }
 }
@@ -75,14 +80,16 @@ export const getUsers = async (req: FastifyRequest, rep: FastifyReply): Promise<
   try {
     let users: User[] = await prisma.user.findMany()
     return rep.send({
-      status: 'success',
+      status: CustomResponseStatus.SUCCESS,
+      code: CustomResponseCodes.AUTHORIZED,
       data: users
     })
   } catch (e: any) {
     prisma.$disconnect()
     return rep.status(500).send({
-      status: 'failed',
-      data: "error: user.controller.ts:48"
+      status: CustomResponseStatus.FAIL,
+      code: CustomResponseCodes.INTERNAL_SERVER_ERROR,
+      data: null
     })
   }
 }
@@ -100,15 +107,17 @@ export const updateUser = async (req: FastifyRequest<{ Body: Partial<Omit<User, 
     })
 
     return rep.send({
-      status: 'success',
+      status: CustomResponseStatus.SUCCESS,
+      code: CustomResponseCodes.AUTHORIZED,
       data: updatedUser
     })
 
   } catch (e: any) {
     prisma.$disconnect()
     return rep.status(500).send({
-      status: 'failed',
-      data: "error: user.controller.ts:94"
+      status: CustomResponseStatus.FAIL,
+      code: CustomResponseCodes.INTERNAL_SERVER_ERROR,
+      data: null
     })
   }
 }
@@ -123,15 +132,17 @@ export const deleteUser = async (req: FastifyRequest<{ Params: { id: string } }>
     })
 
     return rep.send({
-      status: "success",
+      status: CustomResponseStatus.SUCCESS,
+      code: CustomResponseCodes.AUTHORIZED,
       data: user
     })
 
   } catch (e: any) {
     prisma.$disconnect()
     return rep.status(500).send({
-      status: 'failed',
-      data: "error: user.controller.ts:94"
+      status: CustomResponseStatus.FAIL,
+      code: CustomResponseCodes.INTERNAL_SERVER_ERROR,
+      data: null
     })
   }
 }

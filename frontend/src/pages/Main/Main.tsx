@@ -1,10 +1,17 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { MainContainer, WelcomeBanner } from './style'
 
 const Main: React.FC = () => {
+  const navigate = useNavigate()
 
   const [user] = useState<string>("Nacho Martin")
   const [balance] = useState<number>(+100);
+
+  useEffect(() => {
+    // check if the user is authenticated
+    // get expense lists of the user
+  }, [navigate])
 
   return (
     <MainContainer>

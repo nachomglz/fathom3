@@ -2,6 +2,7 @@
 *, *::before, *::after {
   margin: 0;
   padding: 0;
+  box-sizing: border-box;
 }
 
 body {
@@ -22,3 +23,6 @@ body {
   margin: 0 auto;
 }
 
+.Toastify__toast-theme--dark {
+  background-color: #333333 !important;
+}

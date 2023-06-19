@@ -1,4 +1,5 @@
 import { PrismaClient } from "@prisma/client";
+import logger from "../src/utils/logger";
 
 const prisma = new PrismaClient()
 
@@ -10,7 +11,6 @@ async function main() {
             name: 'John',
             surname: 'Doe',
             password: '123456789',
-            totalBalance: 40
         },
     })
 
@@ -20,7 +20,6 @@ async function main() {
             name: 'Emily',
             surname: 'James',
             password: '123456789',
-            totalBalance: -40
         },
     })
 
@@ -52,10 +51,10 @@ async function main() {
 
 main()
     .then(_ => {
-        console.log('[INFO] ~ Database sown')
+        logger.info('Database sown')
         prisma.$disconnect()
     }).catch(e => {
-        console.error('[ERROR] ~ Seeding the database...')
+        logger.error('Seeding the database...')
         prisma.$disconnect()
         process.exit(1)
     })
