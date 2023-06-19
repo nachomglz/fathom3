@@ -1,13 +1,24 @@
 import { FastifyInstance, FastifyRequest, FastifyReply  } from "fastify"
 import jwt, { JwtPayload } from 'jsonwebtoken'
+import { CustomResponseStatus, CustomResponseCodes } from "./types"
+
+interface ValidJwtPayload extends JwtPayload {
+    id: string
+}
+
+type TokenValidationResponse = {
+    code: CustomResponseCodes,
+    decoded?: ValidJwtPayload
+}
 
 export const verifyAuthentication = (req: FastifyRequest, rep: FastifyReply, done: () => void) => {
     try {
         let token = req.cookies.token
         if(!token) {
             return rep.status(401).send({
-                status: 'failed',
-                data: 'TOKEN_NOT_PROVIDED'
+                status: CustomResponseStatus.FAIL,
+                code: CustomResponseCodes.TOKEN_NOT_PROVIDED,
+                data: null
             })
         }
 
@@ -15,8 +26,9 @@ export const verifyAuthentication = (req: FastifyRequest, rep: FastifyReply, don
 
         if (!valid) {
             return rep.status(401).send({
-                status: 'failed',
-                data: 'not_authorized'
+                status: CustomResponseStatus.FAIL,
+                code: CustomResponseCodes.UNAUTHORIZED,
+                data: null
             })
         }
 
@@ -24,37 +36,29 @@ export const verifyAuthentication = (req: FastifyRequest, rep: FastifyReply, don
 
     } catch(e: any) {
         return rep.status(500).send({
-            status: 'failed',
-            data: 'error: authentication:15'
+            status: CustomResponseStatus.FAIL,
+            code: CustomResponseCodes.INTERNAL_SERVER_ERROR,
+            data: null
         })
     }
 
     done()
 }
 
-interface ValidJwtPayload extends JwtPayload {
-    id: string
-}
-
-type TokenValidationResponse = {
-    code: "TOKEN_INVALID" | "TOKEN_EXPIRED" | "TOKEN_MALFORMED" | "INTERNAL_ERROR" | "TOKEN_VALID",
-    decoded?: ValidJwtPayload
-}
-
 export const validateToken = (token: string): TokenValidationResponse => {
     try {
         let valid = jwt.verify(token, process.env.AUTH_SECRET ?? "mylongsecretkey") as ValidJwtPayload
-        return valid ? { code: 'TOKEN_VALID', decoded: valid } : { code: 'TOKEN_INVALID'}
+        return valid ? { code: CustomResponseCodes.TOKEN_VALID, decoded: valid } : { code: CustomResponseCodes.TOKEN_INVALID}
     } catch(e: any) {
         switch(true) {
             case /expired/.test(e.message):
-                return { code: 'TOKEN_EXPIRED' }
+                return { code: CustomResponseCodes.TOKEN_EXPIRED }
             case /invalid/.test(e.message):
-                return { code: 'TOKEN_INVALID' }
+                return { code: CustomResponseCodes.TOKEN_INVALID }
             case /malformed/.test(e.message):
-                return { code: 'TOKEN_MALFORMED' }
+                return { code: CustomResponseCodes.TOKEN_MALFORMED }
             default:
-                return { code: 'INTERNAL_ERROR'}
+                return { code: CustomResponseCodes.INTERNAL_SERVER_ERROR}
         }
     }
 }

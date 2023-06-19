@@ -1,5 +1,6 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import { PrismaClient, ExpenseList } from '@prisma/client'
+import { CustomResponseCodes, CustomResponseStatus } from "../utils/types";
 
 const prisma = new PrismaClient()
 
@@ -14,15 +15,17 @@ export const createExpenseList = async (req: FastifyRequest, rep: FastifyReply):
     prisma.$disconnect()
 
     return rep.send({
-      status: 'success',
+      status: CustomResponseStatus.SUCCESS,
+      code: CustomResponseCodes.AUTHORIZED,
       data: newExpenseList
     })
 
   } catch (e: any) {
     prisma.$disconnect()
     return rep.status(500).send({
-      status: 'failed',
-      data: "error: expenseList.controller.ts:13"
+      status: CustomResponseStatus.FAIL,
+      code: CustomResponseCodes.INTERNAL_SERVER_ERROR,
+      data: null
     })
   }
 }
@@ -39,15 +42,17 @@ export const getExpenseLists = async (req: FastifyRequest, rep: FastifyReply): P
     });
 
     return rep.send({
-      status: 'success',
+      status: CustomResponseStatus.SUCCESS,
+      code: CustomResponseCodes.AUTHORIZED,
       data: expenseLists
     })
 
   } catch (e: any) {
     prisma.$disconnect()
     return rep.status(500).send({
-      status: 'failed',
-      data: "error: expenseList.controller.ts:37"
+      status: CustomResponseStatus.FAIL,
+      code: CustomResponseCodes.INTERNAL_SERVER_ERROR,
+      data: null
     })
   }
 }
@@ -70,21 +75,24 @@ export const getExpenseList = async (req: FastifyRequest<{ Params: { id: string 
 
     if (!expenseList) {
       return rep.status(404).send({
-        status: 'success',
-        data: "Expense list not found"
+        status: CustomResponseStatus.FAIL,
+        code: CustomResponseCodes.NOT_FOUND,
+        data: null
       })
     }
 
     return rep.send({
-      status: 'success',
+      status: CustomResponseStatus.SUCCESS,
+      code: CustomResponseCodes.AUTHORIZED,
       data: expenseList
     })
 
   } catch (e: any) {
     prisma.$disconnect()
     return rep.status(500).send({
-      status: 'failed',
-      data: "error: expenseList.controller.ts:63"
+      status: CustomResponseStatus.FAIL,
+      code: CustomResponseCodes.INTERNAL_SERVER_ERROR,
+      data: null
     })
   }
 }
@@ -105,15 +113,17 @@ export const updateExpenseList = async (req: FastifyRequest<{ Body: Partial<Expe
     prisma.$disconnect()
 
     return rep.send({
-      status: 'success',
+      status: CustomResponseStatus.SUCCESS,
+      code: CustomResponseCodes.AUTHORIZED,
       data: updatedExpenseList
     })
 
   } catch (e: any) {
     prisma.$disconnect()
     return rep.status(500).send({
-      status: 'failed',
-      data: "error: expenseList.controller.ts:128"
+      status: CustomResponseStatus.FAIL,
+      code: CustomResponseCodes.INTERNAL_SERVER_ERROR,
+      data: null
     })
   }
 }
@@ -129,21 +139,24 @@ export const deleteExpenseList = async (req: FastifyRequest<{ Params: { id: stri
     })
 
     return rep.send({
-      status: 'success',
+      status: CustomResponseStatus.SUCCESS,
+      code: CustomResponseCodes.AUTHORIZED,
       data: expenseList
     })
 
   } catch (e: any) {
     if (e.code && e.code === 'P2025') {
       return rep.status(404).send({
-        status: 'failed',
-        data: "The expense list does not exist"
+        status: CustomResponseStatus.FAIL,
+        code: CustomResponseCodes.NOT_FOUND,
+        data: null
       })
     }
 
     return rep.status(500).send({
-      status: 'failed',
-      data: "error: expenseList.controller.ts:115"
+      status: CustomResponseStatus.FAIL,
+      code: CustomResponseCodes.INTERNAL_SERVER_ERROR,
+      data: null
     })
   }
 }

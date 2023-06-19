@@ -3,6 +3,8 @@ import { FastifyReply, FastifyRequest, FastifyInstance } from 'fastify'
 import jwt, { JwtPayload as DefaultPayload } from 'jsonwebtoken'
 import { LoginBody } from '../routers/auth.router'
 import { validateToken } from '../utils/authentication'
+import logger from '../utils/logger'
+import { CustomResponseCodes, CustomResponseStatus } from '../utils/types'
 
 interface JwtPayload extends DefaultPayload {
   id: string
@@ -28,8 +30,9 @@ export const login = async (req: FastifyRequest<{ Body: LoginBody }>, rep: Fasti
 
     if (!user) {
       return rep.status(401).send({
-        status: 'failed',
-        data: 'USER_UNAUTHORIZED'
+        status: CustomResponseStatus.FAIL,
+        code: CustomResponseCodes.UNAUTHORIZED,
+        data: null
       })
     }
     // create auth and refresh tokens
@@ -50,7 +53,8 @@ export const login = async (req: FastifyRequest<{ Body: LoginBody }>, rep: Fasti
     })
 
     return rep.send({
-      status: 'success',
+      status: CustomResponseStatus.SUCCESS,
+      code: CustomResponseCodes.AUTHORIZED,
       data: {
         refresh_token: refreshToken,
         expiresIn: 60 * 60 * 24 * 7
@@ -58,10 +62,10 @@ export const login = async (req: FastifyRequest<{ Body: LoginBody }>, rep: Fasti
     })
 
   } catch (e: any) {
-    console.error('error: ', e.toString())
     return rep.status(500).send({
-      status: 'failed',
-      data: 'error: auth.controller.ts:19'
+      status: CustomResponseStatus.FAIL,
+      code: CustomResponseCodes.INTERNAL_SERVER_ERROR,
+      data: null
     })
   }
 }
@@ -72,8 +76,9 @@ export const refresh = async (req: FastifyRequest, rep: FastifyReply): Promise<F
     let refreshToken = req.headers.authorization
     if (!refreshToken) {
       return rep.status(401).send({
-        status: 'failed',
-        data: "Not authorized"
+        status: CustomResponseStatus.FAIL,
+        code: CustomResponseCodes.TOKEN_NOT_PROVIDED,
+        data: null
       })
     }
 
@@ -82,10 +87,11 @@ export const refresh = async (req: FastifyRequest, rep: FastifyReply): Promise<F
     // validate token
     let { code, decoded } = validateToken(refreshToken)
 
-    if(code !== 'TOKEN_VALID') {
-      return rep.status(code === 'INTERNAL_ERROR' ? 500 : 401).send({
-        status: 'failed',
-        data: code
+    if(code !== CustomResponseCodes.TOKEN_VALID) {
+      return rep.status(code === CustomResponseCodes.INTERNAL_SERVER_ERROR ? 500 : 401).send({
+        status: CustomResponseStatus.FAIL,
+        code: code,
+        data: null
       })
     }
 
@@ -97,20 +103,16 @@ export const refresh = async (req: FastifyRequest, rep: FastifyReply): Promise<F
     })
 
     return rep.send({
-      status: 'success'
+      status: CustomResponseStatus.SUCCESS,
+      code: CustomResponseCodes.AUTHORIZED,
+      data: null
     })
 
   } catch (e: any) {
-    console.error('error: ', e.message)
-    if (/(invalid|malformed)/.test(e.message)) {
-      return rep.status(401).send({
-        status: 'failed',
-        data: 'TOKEN_INVALID'
-      })
-    }
     return rep.status(500).send({
-      status: 'failed',
-      data: 'error: auth.controller.ts:103'
+      status: CustomResponseStatus.FAIL,
+      code: CustomResponseCodes.INTERNAL_SERVER_ERROR,
+      data: null
     })
   }
 }
@@ -120,28 +122,45 @@ export const authenticate = async (req: FastifyRequest, rep: FastifyReply): Prom
     let token = req.cookies.token
     if (!token) {
       return rep.status(401).send({
-        status: 'failed',
-        data: 'TOKEN_NOT_PROVIDED'
+        status: CustomResponseStatus.FAIL,
+        code: CustomResponseCodes.TOKEN_NOT_PROVIDED,
+        data: null
       })
     }
 
-    let valid = jwt.verify(token, process.env.AUTH_SECRET ?? "mylongsecretkey") as JwtPayload
+    let validation = validateToken(token)
 
-    return rep.send({
-      status: valid
-    })
-
-
+    switch(validation.code) {
+      case CustomResponseCodes.TOKEN_EXPIRED:
+      case CustomResponseCodes.TOKEN_INVALID:
+      case CustomResponseCodes.TOKEN_MALFORMED:
+      case CustomResponseCodes.TOKEN_NOT_PROVIDED:
+      case CustomResponseCodes.UNAUTHORIZED:
+        return rep.status(401).send({
+          status: CustomResponseStatus.FAIL,
+          code: validation.code,
+          data: null,
+        })
+      case CustomResponseCodes.INTERNAL_SERVER_ERROR:
+        return rep.status(500).send({
+          status: CustomResponseStatus.FAIL,
+          code: validation.code,
+          data: null,
+        })
+      case CustomResponseCodes.TOKEN_VALID:
+      case CustomResponseCodes.AUTHORIZED:
+      default: 
+        return rep.send({
+          status: CustomResponseStatus.SUCCESS,
+          code: validation.code,
+          data: null,
+        })
+    }
   } catch (e: any) {
-    if (/(expired)/.test(e.message)) {
-      return rep.status(401).send({
-        status: 'success',
-        data: "TOKEN_EXPIRED"
-      })
-    }
     return rep.status(500).send({
-      status: 'failed',
-      data: 'error: auth.controller.ts:129'
+      status: CustomResponseStatus.FAIL,
+      code: CustomResponseCodes.INTERNAL_SERVER_ERROR,
+      data: null
     })
   }
 
