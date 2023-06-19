@@ -12,6 +12,10 @@ export const createUser = async (req: FastifyRequest<{ Body: Omit<User, "id"> }>
         ...user
       },
       select: {
+        id: true,
+        name: true,
+        surname: true,
+        email: true,
         password: false
       }
     })
@@ -29,6 +33,7 @@ export const createUser = async (req: FastifyRequest<{ Body: Omit<User, "id"> }>
     }
   } catch (e: any) {
     prisma.$disconnect()
+    console.log('erri: ', e)
     return rep.status(500).send({
       status: 'failed',
       data: "error: user.controller.ts:15"

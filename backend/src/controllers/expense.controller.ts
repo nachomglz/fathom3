@@ -20,7 +20,6 @@ export const createExpense = async (req: FastifyRequest<{ Body: Omit<Expense, "i
       data: newExpense
     })
   } catch (e: any) {
-    console.error('error: ', e.toString())
     return rep.status(500).send({
       status: 'failed',
       data: 'error: expense.controller.ts:25'
