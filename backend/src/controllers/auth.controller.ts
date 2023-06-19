@@ -2,6 +2,7 @@ import { PrismaClient } from '@prisma/client'
 import { FastifyReply, FastifyRequest, FastifyInstance } from 'fastify'
 import jwt, { JwtPayload as DefaultPayload } from 'jsonwebtoken'
 import { LoginBody } from '../routers/auth.router'
+import { validateToken } from '../utils/authentication'
 
 interface JwtPayload extends DefaultPayload {
   id: string
@@ -46,7 +47,6 @@ export const login = async (req: FastifyRequest<{ Body: LoginBody }>, rep: Fasti
 
     rep.setCookie('token', token, {
       httpOnly: true,
-      maxAge: 15 * 60
     })
 
     return rep.send({
@@ -80,10 +80,17 @@ export const refresh = async (req: FastifyRequest, rep: FastifyReply): Promise<F
     refreshToken = refreshToken.replace(/Bearer\s/, "")
 
     // validate token
-    let valid = jwt.verify(refreshToken, process.env.AUTH_SECRET ?? "mylongsecretke") as JwtPayload
+    let { code, decoded } = validateToken(refreshToken)
+
+    if(code !== 'TOKEN_VALID') {
+      return rep.status(code === 'INTERNAL_ERROR' ? 500 : 401).send({
+        status: 'failed',
+        data: code
+      })
+    }
 
     // create new token
-    let token = jwt.sign({ id: valid.id }, process.env.AUTH_SECRET ?? "mylongsecretkey")
+    let token = jwt.sign({ id: decoded?.id }, process.env.AUTH_SECRET ?? "mylongsecretkey")
 
     rep.setCookie('token', token, {
       httpOnly: true
