@@ -1,13 +1,28 @@
 import server from "./server"
-import { Prisma, PrismaClient } from "@prisma/client"
+import { PrismaClient } from "@prisma/client"
+import logger from "./utils/logger"
+
+// Check if environment variables are set
+let DATABASE_URL = process.env.DATABASE_URL
+let AUTH_SECRET = process.env.AUTH_SECRET
+
+if(!DATABASE_URL) {
+    logger.error('DATABASE_URL environment variable not provided. Aborting...')
+    process.exit(1)
+}
+if(!AUTH_SECRET) {
+    logger.error('AUTH_SECRET environment variable not provided. Aborting...')
+    process.exit(1)
+}
+
+
 
 server.listen({ port: 3001, host: "0.0.0.0" }, (err, addr) => {
     if (err) {
-        console.error(err)
+        logger.error(err)
         process.exit(1)
     }
 
     let prisma = new PrismaClient()
-
-    console.log(`Server running at: ${addr}`)
+    logger.info(`Server running at: ${addr}`)
 })
