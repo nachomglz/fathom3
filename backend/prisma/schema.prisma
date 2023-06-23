@@ -41,6 +41,7 @@ model Expense {
   name          String
   type          ExpenseType @default(SPLIT_EQUALLY)
   amount        Float       @default(0)
+  createdAt DateTime @default(now())
   payerId       Int
   payer         User        @relation(fields: [payerId], references: [id])
   expenseListId Int
