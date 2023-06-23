@@ -18,7 +18,8 @@ if(!AUTH_SECRET) {
 
 
 server.register(cors, {
-    origin: '*'
+    origin: true,
+    credentials: true,
 })
 
 server.listen({ port: 3001, host: "0.0.0.0" }, (err, addr) => {
