@@ -1,4 +1,4 @@
-import axios, { AxiosError } from 'axios'
+import axios from 'axios'
 import { config } from '.'
 import { CustomRequest, RequestOptions, Response, RequestError, ResponseData } from './types'
 
@@ -8,7 +8,8 @@ const request: CustomRequest = {
       const response = await axios<unknown, Response<T>>({
         method: options.method,
         url: options.baseUrl ? options.baseUrl + options.endpoint : config.API_BASE_URL + options.endpoint,
-        data: options.body
+        data: options.body,
+        withCredentials: options.withCredentials,
       })
       return response.data
     } catch (e) {

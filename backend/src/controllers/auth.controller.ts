@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client'
+import { PrismaClient, User } from '@prisma/client'
 import { FastifyReply, FastifyRequest, FastifyInstance } from 'fastify'
 import jwt, { JwtPayload as DefaultPayload } from 'jsonwebtoken'
 import { LoginBody } from '../routers/auth.router'
@@ -32,7 +32,10 @@ export const login = async (req: FastifyRequest<{ Body: LoginBody }>, rep: Fasti
 
       },
       select: {
-        id: true
+        id: true,
+        name: true,
+        surname: true,
+        email: true,
       }
     })
 
@@ -56,8 +59,12 @@ export const login = async (req: FastifyRequest<{ Body: LoginBody }>, rep: Fasti
       expiresIn: 60 * 60 * 24 * 7
     })
 
+    // rep.clearCookie('token')
     rep.setCookie('token', token, {
-      httpOnly: true,
+      path: '/api/',
+      sameSite: 'none',
+      secure: true,
+      httpOnly: true
     })
 
     return rep.send({
@@ -65,7 +72,8 @@ export const login = async (req: FastifyRequest<{ Body: LoginBody }>, rep: Fasti
       code: CustomResponseCodes.AUTHORIZED,
       data: {
         refresh_token: refreshToken,
-        expiresIn: 60 * 60 * 24 * 7
+        expiresIn: 60 * 60 * 24 * 7,
+        user: user
       }
     })
 
@@ -106,7 +114,11 @@ export const refresh = async (req: FastifyRequest, rep: FastifyReply): Promise<F
     // create new token
     let token = jwt.sign({ id: decoded?.id }, process.env.AUTH_SECRET ?? "mylongsecretkey")
 
+    rep.clearCookie('token')
     rep.setCookie('token', token, {
+      path: '/api',
+      sameSite: 'none',
+      secure: true,
       httpOnly: true
     })
 
@@ -158,11 +170,31 @@ export const authenticate = async (req: FastifyRequest, rep: FastifyReply): Prom
       case CustomResponseCodes.TOKEN_VALID:
       case CustomResponseCodes.AUTHORIZED:
       default: 
-        return rep.send({
-          status: CustomResponseStatus.SUCCESS,
-          code: validation.code,
-          data: null,
+        // get user from db
+        let user = await prisma.user.findUnique({
+          where: {
+            id: validation.decoded?.id
+          },
+          select: {
+            id: true,
+            name: true,
+            surname: true,
+            email: true,
+          }
         })
+        if(user) {
+          return rep.send({
+            status: CustomResponseStatus.SUCCESS,
+            code: CustomResponseCodes.AUTHORIZED,
+            data: user
+          })
+        } else {
+          return rep.status(404).send({
+            status: CustomResponseStatus.SUCCESS,
+            code: CustomResponseCodes.NOT_FOUND,
+            data: null
+          })
+        }
     }
   } catch (e: any) {
     return rep.status(500).send({

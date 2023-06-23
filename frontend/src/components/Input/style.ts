@@ -10,7 +10,6 @@ export const StyledInput = styled.input`
   outline: none;
   height: 3rem;
   transition: border .2s ease-in-out;
-  margin-top: .4rem;
 
   &:focus {
     border: 3px solid rgba(0, 209, 255, .7);
@@ -26,5 +25,4 @@ export const StyledLabel = styled.label`
 export const StyledInputWrapper = styled.div`
   display: flex;
   flex-direction: column;
-  margin-bottom: 1rem;
 `

@@ -15,7 +15,8 @@ export interface RequestOptions<B> {
   method: "POST" | "GET" | "PUT" | "DELETE",
   baseUrl?: string,
   endpoint: string,
-  navigate: (url: string) => unknown,
+  withCredentials?: boolean,
+  navigate?: (url: string) => unknown,
   body?: B
 }
 
@@ -36,9 +37,42 @@ export interface CustomRequest {
   send: <B, T>(options: RequestOptions<B>) => Promise<ResponseData<T>>
 }
 
-
 /** Login interfaces */
 export interface LoginResponse {
   refresh_token: string,
-  expiresIn: number
+  expiresIn: number,
+  user: Omit<User, "password">
+}
+
+/** User interface */
+export interface User {
+  id?: number
+  email: string
+  name: string
+  surname: string
+  password: string
+  expenseLists?: ExpenseList[]
+  createdAt?: Date
+  expenses?: Expense[]
+}
+
+/** Expense lists */
+export interface ExpenseList {
+  id?: number
+  participants?: User[]
+  expenses?: Expense[]
+}
+
+/** Expense */
+export type ExpenseType = "SPLIT_EQUALLY" | "PAYER_OWES" | "DEBTOR_OWES"
+export interface Expense {
+  id?: number
+  payerId: number
+  expenseListId: number
+  name: string
+  type: ExpenseType
+  amount: number
+  payer?: User
+  createdAt?: Date
+  expenseList?: ExpenseList
 }

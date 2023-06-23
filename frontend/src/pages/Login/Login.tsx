@@ -1,18 +1,33 @@
-import React, { useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { LoginWrapper, LoginForm, FormButtons } from './style'
 import { Input, Button } from '../../components'
-import { Type as ButtonType } from '../../components/Button'
+import { ButtonType } from '../../components/Button'
 import { validator } from '../../utils'
 import { request } from '../../utils'
 import { LoginResponse } from '../../utils/types'
 import { toast } from 'react-toastify'
+import AuthContext from '../../context/AuthContext'
+import { User } from '../../utils/types/request'
 
 const Login: React.FC = () => {
   const navigate = useNavigate()
+  const authContext = useContext(AuthContext)
 
   const [email, setEmail] = useState<string>()
   const [password, setPassword] = useState<string>()
+
+  const [user, setUser] = useState<Omit<User, "password">>();
+
+  useEffect(() => {
+    if(user && authContext.mutateUser) {
+      authContext.mutateUser('id', user.id)
+      authContext.mutateUser('name', user.name)
+      authContext.mutateUser('surname', user.surname)
+      authContext.mutateUser('email', user.email)
+      navigate('/')
+    }
+  }, [user, authContext, navigate])
 
   const handleLogin = async () => {
     try {
@@ -23,13 +38,14 @@ const Login: React.FC = () => {
         body: {
           email: email??"",
           password: password??""
-        }
+        },
+        withCredentials: true
       })
-      console.log('response: ', response)
-      if(response.status === 'success' && response.code === 'AUTHORIZED') {
+      if(response.status === 'success' && response.code === 'AUTHORIZED' && response.data) {
         const refresh_token = response.data?.refresh_token ?? "";
         localStorage.setItem("refresh_token", refresh_token)
-        navigate('/')
+        setUser(response.data.user)
+
       } else {
         switch(response.code) {
           case 'UNAUTHORIZED':

@@ -1,5 +1,5 @@
 import { FastifyRequest, FastifyReply, FastifyInstance } from 'fastify'
-import { PrismaClient, User } from '@prisma/client'
+import { ExpenseList, PrismaClient, User } from '@prisma/client'
 import logger from '../utils/logger';
 import { CustomResponseCodes, CustomResponseStatus } from '../utils/types';
 
@@ -139,6 +139,50 @@ export const deleteUser = async (req: FastifyRequest<{ Params: { id: string } }>
 
   } catch (e: any) {
     prisma.$disconnect()
+    return rep.status(500).send({
+      status: CustomResponseStatus.FAIL,
+      code: CustomResponseCodes.INTERNAL_SERVER_ERROR,
+      data: null
+    })
+  }
+}
+
+export const getUserExpenseLists = async (req: FastifyRequest<{ Params: { id: string }}>, rep: FastifyReply): Promise<FastifyInstance> => {
+  try{
+    let userId = req.params.id
+    let expenseLists: Partial<ExpenseList>[] = await prisma.expenseList.findMany({
+      where: {
+        participants: {
+          some: {
+            id: parseInt(userId)
+          }
+        }
+      },
+      select: {
+        id: true,
+        expenses: {
+          select: {
+            id: true,
+            name: true,
+            amount: true,
+            payerId: true,
+            type: true,
+            payer: true,
+            createdAt: true,
+          }
+        },
+        participants: true,
+        createdAt: true 
+      }
+    })
+
+    return rep.send({
+      status: CustomResponseStatus.SUCCESS,
+      code: CustomResponseCodes.AUTHORIZED,
+      data: expenseLists
+    })
+  } catch(e: any) {
+    logger.error("error: ", e.message)
     return rep.status(500).send({
       status: CustomResponseStatus.FAIL,
       code: CustomResponseCodes.INTERNAL_SERVER_ERROR,

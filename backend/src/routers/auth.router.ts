@@ -10,7 +10,7 @@ export interface LoginBody {
 const authRouter = (fastify: FastifyInstance, options: any, done: () => void) => {
   fastify.post('/login', login)
   fastify.get('/refresh', refresh)
-  fastify.post('/', { preHandler: verifyAuthentication }, authenticate)
+  fastify.post('/', authenticate)
   done()
 }
 

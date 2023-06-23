@@ -1,6 +1,7 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import { PrismaClient, ExpenseList } from '@prisma/client'
 import { CustomResponseCodes, CustomResponseStatus } from "../utils/types";
+import logger from "../utils/logger";
 
 const prisma = new PrismaClient()
 
@@ -35,9 +36,6 @@ export const getExpenseLists = async (req: FastifyRequest, rep: FastifyReply): P
     let expenseLists = await prisma.expenseList.findMany({
       select: {
         id: true,
-        createdAt: true,
-        expenses: true,
-        participants: true
       }
     });
 

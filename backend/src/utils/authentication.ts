@@ -1,9 +1,10 @@
 import { FastifyInstance, FastifyRequest, FastifyReply  } from "fastify"
 import jwt, { JwtPayload } from 'jsonwebtoken'
 import { CustomResponseStatus, CustomResponseCodes } from "./types"
+import logger from "./logger"
 
 interface ValidJwtPayload extends JwtPayload {
-    id: string
+    id: number
 }
 
 type TokenValidationResponse = {
@@ -22,18 +23,17 @@ export const verifyAuthentication = (req: FastifyRequest, rep: FastifyReply, don
             })
         }
 
-        let valid = jwt.verify(token, process.env.AUTH_SECRET ?? "mylongsecretkey");
+        let validation = validateToken(token)
 
-        if (!valid) {
+        if (validation.code === CustomResponseCodes.TOKEN_VALID) {
+            done()
+        } else {
             return rep.status(401).send({
                 status: CustomResponseStatus.FAIL,
-                code: CustomResponseCodes.UNAUTHORIZED,
+                code: validation.code,
                 data: null
             })
         }
-
-        done()
-
     } catch(e: any) {
         return rep.status(500).send({
             status: CustomResponseStatus.FAIL,

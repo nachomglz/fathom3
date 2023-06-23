@@ -28,6 +28,25 @@ export const ButtonWrapper = styled.div<{ type: Type }> `
   }
 `
 
+export const StyledActionButton = styled.div`
+  background-color: #333333;
+  border-radius: .7rem;
+  height: 2.5rem;
+  width: 2.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 
+  button {
+    background: none;
+    cursor: pointer;
+    border: none;
+    padding: .8rem;
+    
+    img {
+      height: 1.4rem;
+      width: 1.4rem;
+    }
 
-
+  }
+`

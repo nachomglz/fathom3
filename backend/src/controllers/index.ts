@@ -1,3 +1,3 @@
-import { getUser, getUsers, createUser, updateUser, deleteUser } from './user.controller'
+import { getUser, getUsers, createUser, updateUser, deleteUser, getUserExpenseLists } from './user.controller'
 
-export { getUser, getUsers, createUser, updateUser, deleteUser }
+export { getUser, getUsers, createUser, updateUser, deleteUser, getUserExpenseLists }
